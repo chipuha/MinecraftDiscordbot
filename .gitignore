@@ -1,6 +1,6 @@
 #mine
 *.env
-
+.idea
 
 
 # C++ objects and libs
