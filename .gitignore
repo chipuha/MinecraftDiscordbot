@@ -1,3 +1,8 @@
+#mine
+.env
+
+
+
 # C++ objects and libs
 *.slo
 *.lo
