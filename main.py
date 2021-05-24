@@ -130,7 +130,10 @@ async def ms_death():
 
 #gets stats from the server
 @bot.command(name='status', help='Shows the current status of players on the server.')
-async def player_stats(ctx, message):
+async def player_status(ctx, message):
+
+
+
     uuid = MojangAPI.get_uuid(message)
     p_filename = uuid[:8]+"-"+uuid[8:12]+"-"+uuid[12:16]+"-"+uuid[16:20]+"-"+uuid[20:]+".dat"
 
@@ -144,27 +147,42 @@ async def player_stats(ctx, message):
     # XP
     p_xp = player['XpLevel'].value
 
+    # Health
+    p_health = player['Health'].value/2
+    if p_health.is_integer():
+        p_health = int(p_health)
+
     # hunger
     p_hunger = player['foodLevel'].value/2
     if p_hunger.is_integer():
         p_hunger = int(p_hunger)
-    p_hunger_graph = ''.join([':poultry_leg:']*p_hunger)
-    print(p_hunger_graph)
+
 
     # holding
     item = player['SelectedItemSlot'].value
     p_item = player['Inventory'][item]['id'].value.split(":")[-1].replace('_', ' ')
     file_item = player['Inventory'][item]['id'].value.split(":")[-1]
 
+    # online
+    serv = MinecraftServer(server_ip, 25565)
+    query = serv.query()
+    playing = query.players.names
+    if message in playing:
+        p_online = ":green_circle:"
+    else:
+        p_online = ":red_circle:"
+
     embed = discord.Embed(
-        title="{}'s stats".format(message),
+        title="{}'s status".format(message),
         color=discord.Color.dark_green()
     )
-    embed.add_field(name="UUID", value=uuid, inline=False)
     embed.add_field(name="Last known location", value=p_loc, inline=False)
-    embed.add_field(name="XP", value=p_xp, inline=False)
-    embed.add_field(name="Hunger", value="{} {}/10".format(p_hunger_graph, p_hunger), inline=False)
     embed.add_field(name="Last holding", value=p_item, inline=False)
+    embed.add_field(name="XP", value=p_xp, inline=True)
+    embed.add_field(name="Health", value="{}/10".format(p_health), inline=True)
+    embed.add_field(name="Hunger", value="{}/10".format(p_hunger), inline=True)
+    embed.add_field(name="Online", value=p_online, inline=False)
+
 
     embed.set_thumbnail(url="https://visage.surgeplay.com/bust/512/{}".format(uuid))
     await ctx.send(embed=embed)
