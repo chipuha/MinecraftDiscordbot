@@ -1,4 +1,4 @@
-name: MinecraftDiscord
+name: minecraftdiscord
 channels:
   - conda-forge
   - defaults
@@ -34,7 +34,8 @@ dependencies:
     - idna==2.10
     - mcstatus==5.2.0
     - mojang==0.1.8
+    - nbt==1.5.0
     - requests==2.25.1
     - six==1.16.0
     - urllib3==1.26.4
-prefix: C:\Users\chipu\Anaconda3\envs\MinecraftDiscord
+prefix: C:\Users\chipu\Anaconda3\envs\minecraftdiscord
