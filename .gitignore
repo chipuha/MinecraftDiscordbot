@@ -1,7 +1,7 @@
 #mine
 *.env
 .idea
-
+My_testing/
 
 # C++ objects and libs
 *.slo

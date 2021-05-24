@@ -8,4 +8,6 @@ Just add an .env file with your discord bot token, and server IP address like be
 # .env
 DISCORD_TOKEN=***
 SERVER_IP=***
+CHANNEL_ID=***
+SAVE_LOCATION=***
 ```

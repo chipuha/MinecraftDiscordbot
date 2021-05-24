@@ -5,11 +5,13 @@ from discord.ext import commands
 from mojang import MojangAPI
 from mcstatus import MinecraftServer
 import random
+from nbt import nbt
 
 load_dotenv()
 TOKEN = os.getenv('DISCORD_TOKEN')
 server_ip = os.getenv('SERVER_IP')
 typie_id = os.getenv('TYPIE_ID')
+save_location = os.getenv('SAVE_LOCATION')
 
 # Change only the no_category default string
 help_command = commands.DefaultHelpCommand(no_category='Commands')
@@ -80,8 +82,7 @@ async def server_error(ctx, error):
              help='Looks up Minecraft user names.')
 async def who_is(ctx, message):
     uuid = MojangAPI.get_uuid(message)
-    thumb_url = "https://i1.wp.com/www.craftycreations.net/wp-content/uploads/2019/08/Grass-Block-e1566147655539.png" \
-                "?fit=500%2C500&ssl=1 "
+
     if uuid:
         namehist = MojangAPI.get_name_history(uuid)
         profile = MojangAPI.get_profile(uuid)
@@ -93,7 +94,6 @@ async def who_is(ctx, message):
         embed.add_field(name="UUID", value=uuid, inline=False)
         embed.add_field(name="Skin", value="[Open Skin]({})".format(profile.skin_url), inline=True)
         embed.add_field(name="Information", value="Username Changes:{}".format(len(namehist)), inline=True)
-        embed.set_thumbnail(url=thumb_url)
 
         embed.set_thumbnail(url="https://visage.surgeplay.com/bust/512/{}".format(uuid))
         await ctx.send(embed=embed)
@@ -128,10 +128,67 @@ async def ms_death():
     await channel.sed("{} died.".format(username))
 
 
-# gets stats from the server
-# @bot.command(name='stats', help='Shows some stats for the server.')
-# async def player_stats(ctx, message):
-# parse files in saves folder
+#gets stats from the server
+@bot.command(name='status', help='Shows the current status of players on the server.')
+async def player_status(ctx, message):
+
+
+
+    uuid = MojangAPI.get_uuid(message)
+    p_filename = uuid[:8]+"-"+uuid[8:12]+"-"+uuid[12:16]+"-"+uuid[16:20]+"-"+uuid[20:]+".dat"
+
+    player = nbt.NBTFile(save_location+"playerdata/"+p_filename, 'rb')
+
+    # location
+    p_loc = "X: {}, Y: {}, Z: {}".format(int(player['Pos'][0].value),
+                                         int(player['Pos'][1].value),
+                                         int(player['Pos'][2].value))
+
+    # XP
+    p_xp = player['XpLevel'].value
+
+    # Health
+    p_health = player['Health'].value/2
+    if p_health.is_integer():
+        p_health = int(p_health)
+
+    # hunger
+    p_hunger = player['foodLevel'].value/2
+    if p_hunger.is_integer():
+        p_hunger = int(p_hunger)
+
+
+    # holding
+    item = player['SelectedItemSlot'].value
+    p_item = player['Inventory'][item]['id'].value.split(":")[-1].replace('_', ' ')
+    file_item = player['Inventory'][item]['id'].value.split(":")[-1]
+
+    # online
+    serv = MinecraftServer(server_ip, 25565)
+    query = serv.query()
+    playing = query.players.names
+    if message in playing:
+        p_online = ":green_circle:"
+    else:
+        p_online = ":red_circle:"
+
+    embed = discord.Embed(
+        title="{}'s status".format(message),
+        color=discord.Color.dark_green()
+    )
+    embed.add_field(name="Last known location", value=p_loc, inline=False)
+    embed.add_field(name="Last holding", value=p_item, inline=False)
+    embed.add_field(name="XP", value=p_xp, inline=True)
+    embed.add_field(name="Health", value="{}/10".format(p_health), inline=True)
+    embed.add_field(name="Hunger", value="{}/10".format(p_hunger), inline=True)
+    embed.add_field(name="Online", value=p_online, inline=False)
+
+
+    embed.set_thumbnail(url="https://visage.surgeplay.com/bust/512/{}".format(uuid))
+    await ctx.send(embed=embed)
+
+
+
 
 # gets player data from the server
 # https://github.com/twoolie/NBT
