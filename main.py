@@ -6,6 +6,8 @@ from mojang import MojangAPI
 from mcstatus import MinecraftServer
 import random
 from nbt import nbt
+import json
+import datetime
 
 load_dotenv()
 TOKEN = os.getenv('DISCORD_TOKEN')
@@ -33,6 +35,10 @@ def villager_noise():
               "Hurn"
               ]
     return random.choice(noises)
+
+
+def format_txt(txt):
+    return txt.split(":")[-1].replace("_", " ").capitalize()
 
 
 # prints welcome message when connected to Discord
@@ -128,35 +134,31 @@ async def ms_death():
     await channel.sed("{} died.".format(username))
 
 
-#gets stats from the server
+# gets status from the server
 @bot.command(name='status', help='Shows the current status of players on the server.')
 async def player_status(ctx, message):
-
-
-
     uuid = MojangAPI.get_uuid(message)
-    p_filename = uuid[:8]+"-"+uuid[8:12]+"-"+uuid[12:16]+"-"+uuid[16:20]+"-"+uuid[20:]+".dat"
-
-    player = nbt.NBTFile(save_location+"playerdata/"+p_filename, 'rb')
+    p_filename = uuid[:8] + "-" + uuid[8:12] + "-" + uuid[12:16] + "-" + uuid[16:20] + "-" + uuid[20:] + ".dat"
+    player = nbt.NBTFile(save_location + "playerdata/" + p_filename, 'rb')
 
     # location
-    p_loc = "X: {}, Y: {}, Z: {}".format(int(player['Pos'][0].value),
-                                         int(player['Pos'][1].value),
-                                         int(player['Pos'][2].value))
+    p_loc = "{}: X: {}, Y: {}, Z: {}".format(player['Dimension'].value.split(":")[-1].capitalize(),
+                                             int(player['Pos'][0].value),
+                                             int(player['Pos'][1].value),
+                                             int(player['Pos'][2].value))
 
     # XP
     p_xp = player['XpLevel'].value
 
     # Health
-    p_health = player['Health'].value/2
+    p_health = player['Health'].value / 2
     if p_health.is_integer():
         p_health = int(p_health)
 
     # hunger
-    p_hunger = player['foodLevel'].value/2
+    p_hunger = player['foodLevel'].value / 2
     if p_hunger.is_integer():
         p_hunger = int(p_hunger)
-
 
     # holding
     item = player['SelectedItemSlot'].value
@@ -183,14 +185,118 @@ async def player_status(ctx, message):
     embed.add_field(name="Hunger", value="{}/10".format(p_hunger), inline=True)
     embed.add_field(name="Online", value=p_online, inline=False)
 
+    embed.set_thumbnail(url="https://visage.surgeplay.com/bust/512/{}".format(uuid))
+    await ctx.send(embed=embed)
+
+
+# gets individual player stats
+@bot.command(name='stats', help="Shows a few of a player's stats.")
+async def stats(ctx, message):
+    # load json file
+    uuid = MojangAPI.get_uuid(message)
+    p_filename = uuid[:8] + "-" + uuid[8:12] + "-" + uuid[12:16] + "-" + uuid[16:20] + "-" + uuid[20:] + ".dat"
+    filename = save_location + "stats/" + p_filename + ".json"
+
+    with open(filename) as f:
+        stats_dict = json.load(f)['stats']
+
+    # get top stats (highest, and most, etc)
+    tops = {}
+    for key in stats_dict.keys():
+        tops[key] = (max(k for k, v in stats_dict[key].items() if v != 0))
+
+    embed = discord.Embed(
+        title="{}'s stats".format(message),
+        color=discord.Color.dark_green()
+    )
+    embed.add_field(name="Most used item:", value=format_txt(tops["minecraft:used"]), inline=False)
+    embed.add_field(name="Total mobs killed:",
+                    value=stats_dict['minecraft:custom']['minecraft:mob_kills'],
+                    inline=True)
+    most_mobs = format_txt(tops["minecraft:killed"]) + " - " + str(
+        stats_dict['minecraft:killed'][tops['minecraft:killed']])
+    embed.add_field(name="Most killed mob:", value=most_mobs, inline=True),
+    embed.add_field(name="Damage dealt:", value=stats_dict['minecraft:custom']['minecraft:damage_dealt'], inline=True)
+    embed.add_field(name="Total deaths:", value=stats_dict['minecraft:custom']['minecraft:deaths'], inline=True)
+    killed_most = format_txt(tops["minecraft:killed_by"]) + ' - ' + str(
+        stats_dict['minecraft:killed_by'][tops['minecraft:killed_by']])
+    embed.add_field(name="Killed most by:", value=killed_most, inline=True)
+    embed.add_field(name="Damage taken:", value=stats_dict['minecraft:custom']['minecraft:damage_taken'], inline=True)
+    s = stats_dict['minecraft:custom']['minecraft:time_since_death']
+    embed.add_field(name="Time since last death:",
+                    value=str(datetime.timedelta(seconds=s)),
+                    inline=False)
 
     embed.set_thumbnail(url="https://visage.surgeplay.com/bust/512/{}".format(uuid))
     await ctx.send(embed=embed)
 
 
+# gets individual player stats
+@bot.command(name='rankings', help="Shows the current rankings among known players.")
+async def rankings(ctx):
+    stats_dict = {"jumpy": {},
+                  "sneaky": {},
+                  "hurry": {},
+                  "fish": {},
+                  "climber": {},
+                  "deadly": {},
+                  "deaths": {},
+                  "dedicated": {},
+                  "lived": {}}
 
+    filename = save_location + "stats/"
+    players = []
 
-# gets player data from the server
-# https://github.com/twoolie/NBT
+    for file in os.listdir(filename):
+        if file.endswith(".json"):
+            with open(filename + file) as f:
+                all_stats = json.load(f)['stats']
+                player = MojangAPI.get_username(file.split('.')[0])
+                players.append(player)
+
+            stats_dict["jumpy"][player] = all_stats['minecraft:custom']['minecraft:jump']
+            stats_dict["sneaky"][player] = all_stats['minecraft:custom']['minecraft:sneak_time']
+            stats_dict["hurry"][player] = all_stats['minecraft:custom']['minecraft:sprint_one_cm']
+            stats_dict["fish"][player] = all_stats['minecraft:custom']['minecraft:swim_one_cm']
+            stats_dict["climber"][player] = all_stats['minecraft:custom']['minecraft:climb_one_cm']
+            stats_dict["deadly"][player] = all_stats['minecraft:custom']['minecraft:mob_kills']
+            stats_dict["deaths"][player] = all_stats['minecraft:custom']['minecraft:deaths']
+            stats_dict["dedicated"][player] = all_stats['minecraft:custom']['minecraft:play_one_minute']
+            stats_dict["lived"][player] = all_stats['minecraft:custom']['minecraft:time_since_death']
+
+    results = {}
+    for key in stats_dict.keys():
+        ordered_dict = dict(reversed(sorted(stats_dict[key].items(), key=lambda item: item[1])))
+        ordered_list = list(ordered_dict.items())
+        format_list = []
+        print(ordered_list)
+        for item in ordered_list:
+            if key == "dedicated" or key == "lived":
+                value = str(datetime.timedelta(seconds=item[1]))
+            else:
+                value = "{:,}".format(item[1])
+
+            format_list.append("{}: **{}**".format(item[0], value))
+        results_list = " \n ".join(format_list)
+        print(results_list)
+        results[key] = results_list
+
+    print(results)
+
+    embed = discord.Embed(
+        title="Players: {}".format(', '.join(players)),
+        color=discord.Color.dark_green()
+    )
+    embed.add_field(name="Most jumpy:", value=results['jumpy'], inline=True)
+    embed.add_field(name="Most sneaky:", value=results['sneaky'], inline=True)
+    embed.add_field(name="Most in a hurry:", value=results['hurry'], inline=True)
+    embed.add_field(name="Most like a fish:", value=results['fish'], inline=True)
+    embed.add_field(name="Best climber:", value=results['climber'], inline=True)
+    embed.add_field(name="Most deadly:", value=results['deadly'], inline=True)
+    embed.add_field(name="Most dead:", value=results['deaths'], inline=True)
+    embed.add_field(name="Most dedicated:", value=results['dedicated'], inline=True)
+    embed.add_field(name="Longest lived (current life):", value=results['lived'], inline=True)
+
+    await ctx.send(embed=embed)
 
 bot.run(TOKEN)
