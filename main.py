@@ -194,7 +194,7 @@ async def player_status(ctx, message):
 async def stats(ctx, message):
     # load json file
     uuid = MojangAPI.get_uuid(message)
-    p_filename = uuid[:8] + "-" + uuid[8:12] + "-" + uuid[12:16] + "-" + uuid[16:20] + "-" + uuid[20:] + ".dat"
+    p_filename = uuid[:8] + "-" + uuid[8:12] + "-" + uuid[12:16] + "-" + uuid[16:20] + "-" + uuid[20:]
     filename = save_location + "stats/" + p_filename + ".json"
 
     with open(filename) as f:
@@ -209,23 +209,67 @@ async def stats(ctx, message):
         title="{}'s stats".format(message),
         color=discord.Color.dark_green()
     )
-    embed.add_field(name="Most used item:", value=format_txt(tops["minecraft:used"]), inline=False)
-    embed.add_field(name="Total mobs killed:",
-                    value=stats_dict['minecraft:custom']['minecraft:mob_kills'],
-                    inline=True)
-    most_mobs = format_txt(tops["minecraft:killed"]) + " - " + str(
-        stats_dict['minecraft:killed'][tops['minecraft:killed']])
-    embed.add_field(name="Most killed mob:", value=most_mobs, inline=True),
-    embed.add_field(name="Damage dealt:", value=stats_dict['minecraft:custom']['minecraft:damage_dealt'], inline=True)
-    embed.add_field(name="Total deaths:", value=stats_dict['minecraft:custom']['minecraft:deaths'], inline=True)
-    killed_most = format_txt(tops["minecraft:killed_by"]) + ' - ' + str(
-        stats_dict['minecraft:killed_by'][tops['minecraft:killed_by']])
-    embed.add_field(name="Killed most by:", value=killed_most, inline=True)
-    embed.add_field(name="Damage taken:", value=stats_dict['minecraft:custom']['minecraft:damage_taken'], inline=True)
-    s = stats_dict['minecraft:custom']['minecraft:time_since_death']
-    embed.add_field(name="Time since last death:",
-                    value=str(datetime.timedelta(seconds=s)),
-                    inline=False)
+
+    if "minecraft:used" in tops.keys():
+        embed.add_field(name="Most used item:", value=format_txt(tops["minecraft:used"]), inline=False)
+    else:
+        embed.add_field(name="Most used item:", value="Nothing yet!", inline=False)
+
+    if "minecraft:mob_kills" in stats_dict['minecraft:custom'].keys():
+        embed.add_field(name="Total mobs killed:",
+                        value=stats_dict['minecraft:custom']['minecraft:mob_kills'],
+                        inline=True)
+    else:
+        embed.add_field(name="Total mobs killed:",
+                        value="0",
+                        inline=True)
+
+    if "minecraft:killed" in stats_dict['minecraft:custom'].keys():
+        most_mobs = format_txt(tops["minecraft:killed"]) + " - " + str(
+            stats_dict['minecraft:killed'][tops['minecraft:killed']])
+        embed.add_field(name="Most killed mob:", value=most_mobs, inline=True)
+    else:
+        embed.add_field(name="Most killed mob:", value="Nothing yet!", inline=True)
+
+    if "minecraft:damage_dealt" in stats_dict['minecraft:custom'].keys():
+        embed.add_field(name="Damage dealt:",
+                        value=stats_dict['minecraft:custom']['minecraft:damage_dealt'],
+                        inline=True)
+    else:
+        embed.add_field(name="Damage dealt:",
+                        value="0",
+                        inline=True)
+
+    if "minecraft:deaths" in stats_dict['minecraft:custom'].keys():
+        embed.add_field(name="Total deaths:", value=stats_dict['minecraft:custom']['minecraft:deaths'], inline=True)
+    else:
+        embed.add_field(name="Total deaths:", value="0", inline=True)
+
+    if "minecraft:killed_by" in stats_dict['minecraft:custom'].keys():
+        killed_most = format_txt(tops["minecraft:killed_by"]) + ' - ' + str(
+            stats_dict['minecraft:custom'][tops['minecraft:killed_by']])
+        embed.add_field(name="Killed most by:", value=killed_most, inline=True)
+    else:
+        embed.add_field(name="Killed most by:", value="Nothing yet!", inline=True)
+
+    if "minecraft:damage_taken" in stats_dict['minecraft:custom'].keys():
+        embed.add_field(name="Damage taken:",
+                        value=stats_dict['minecraft:custom']['minecraft:damage_taken'],
+                        inline=True)
+    else:
+        embed.add_field(name="Damage taken:",
+                        value="0",
+                        inline=True)
+
+    if "minecraft:time_since_death" in stats_dict['minecraft:custom'].keys():
+        s = stats_dict['minecraft:custom']['minecraft:time_since_death']
+        embed.add_field(name="Time since last death:",
+                        value=str(datetime.timedelta(seconds=s)),
+                        inline=False)
+    else:
+        embed.add_field(name="Time since last death:",
+                        value="No deaths yet!",
+                        inline=False)
 
     embed.set_thumbnail(url="https://visage.surgeplay.com/bust/512/{}".format(uuid))
     await ctx.send(embed=embed)
