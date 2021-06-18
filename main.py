@@ -50,7 +50,7 @@ async def on_ready():
 # checks to see who is currently playing on the server
 @bot.command(name='whoson',
              help='Checks who is on the server.')
-async def whos_on(ctx):
+async def whos_on(ctx, message):
     serv = MinecraftServer(server_ip, 25565)
     query = serv.query()
     playing = query.players.names
@@ -67,7 +67,7 @@ async def whos_on(ctx):
 # check if the server is running
 @bot.command(name='server',
              help='Check to see if the server is running.')
-async def server(ctx):
+async def server(ctx, message):
     # check if the server is running
     print(server_ip)
     serv = MinecraftServer(server_ip, 25565)
@@ -277,7 +277,7 @@ async def stats(ctx, message):
 
 # gets individual player stats
 @bot.command(name='rankings', help="Shows the current rankings among known players.")
-async def rankings(ctx):
+async def rankings(ctx, message):
     stats_dict = {"jumpy": {},
                   "sneaky": {},
                   "hurry": {},
@@ -342,5 +342,33 @@ async def rankings(ctx):
     embed.add_field(name="Longest lived (current life):", value=results['lived'], inline=True)
 
     await ctx.send(embed=embed)
+
+
+# checks if bot has any problems
+@bot.command(name='botstatus', help="Checks if Nash as any errors.")
+async def bot_status(ctx):
+    functions = [whos_on, server, who_is, player_status, stats, rankings]
+    results = []
+
+    for fn in functions:
+        try:
+            fn(ctx, "chipuha")
+            results.append('On')
+        except Exception as e:
+            results.append(e)
+
+    embed = discord.Embed(
+        title="Functions",
+        color=discord.Color.dark_green()
+    )
+
+    for i in range(len(functions)):
+        if results[i] =="On":
+            embed.add_field(name=functions[i], value=":green_circle:", inline=True)
+        else:
+            embed.add_field(name=functions[i], value=results[i], inline=True)
+
+    await ctx.send(embed=embed)
+
 
 bot.run(TOKEN)
