@@ -53,6 +53,7 @@ async def on_ready():
 async def whos_on(ctx, message=""):
     serv = MinecraftServer(server_ip, 25565)
     status = serv.status()
+    print(status.raw)
     playing = [user['name'] for user in status.raw['players']['sample']]
 
     if len(playing) > 1:
@@ -168,6 +169,7 @@ async def player_status(ctx, message):
     # online
     serv = MinecraftServer(server_ip, 25565)
     status = serv.status()
+    print(status.raw)
     playing = [user['name'] for user in status.raw['players']['sample']]
     if message in playing:
         p_online = ":green_circle:"
