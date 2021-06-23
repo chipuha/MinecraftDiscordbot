@@ -3,39 +3,39 @@ channels:
   - conda-forge
   - defaults
 dependencies:
-  - aiohttp=3.7.4=py38h294d835_0
   - async-timeout=3.0.1=py_1000
   - attrs=21.2.0=pyhd8ed1ab_0
-  - ca-certificates=2021.4.13=haa95532_1
-  - certifi=2020.12.5=py38haa244fe_1
-  - chardet=4.0.0=py38haa244fe_1
-  - click=8.0.1=py38haa244fe_0
   - colorama=0.4.4=pyh9f0ad1d_0
   - discord.py=1.7.2=pyhd8ed1ab_0
-  - multidict=5.1.0=py38h294d835_1
-  - openssl=1.1.1k=h8ffe710_0
-  - pip=21.0.1=py38haa95532_0
   - python=3.8.10=hdbf39b2_7
   - python-dotenv=0.17.1=pyhd8ed1ab_0
-  - python_abi=3.8=1_cp38
-  - setuptools=52.0.0=py38haa95532_0
-  - sqlite=3.35.4=h2bbff1b_0
   - typing-extensions=3.7.4.3=0
   - typing_extensions=3.7.4.3=py_0
-  - vc=14.2=h21ff451_1
-  - vs2015_runtime=14.27.29016=h5e58377_2
   - wheel=0.36.2=pyhd3eb1b0_0
-  - wincertstore=0.2=py38_0
-  - yarl=1.6.3=py38h294d835_1
   - pip:
+    - aiohttp=3.7.4=py38h294d835_0
     - asyncio-dgram==2.0.0
+    - ca-certificates=2021.4.13=haa95532_1
+    - certifi=2020.12.5=py38haa244fe_1
+    - chardet=4.0.0=py38haa244fe_1
+    - click=8.0.1=py38haa244fe_0
     - dnspython==1.15.0
     - dnspython3==1.15.0
     - idna==2.10
     - mcstatus==5.2.0
     - mojang==0.1.8
+    - multidict=5.1.0=py38h294d835_1
     - nbt==1.5.0
+    - openssl=1.1.1k=h8ffe710_0
+    - pip=21.0.1=py38haa95532_0
+    - python_abi=3.8=1_cp38
     - requests==2.25.1
+    - setuptools=52.0.0=py38haa95532_0
     - six==1.16.0
+    - sqlite=3.35.4=h2bbff1b_0
     - urllib3==1.26.4
+    - vc=14.2=h21ff451_1
+    - vs2015_runtime=14.27.29016=h5e58377_2
+    - wincertstore=0.2=py38_0
+    - yarl=1.6.3=py38h294d835_1
 prefix: C:\Users\chipu\Anaconda3\envs\minecraftdiscord
