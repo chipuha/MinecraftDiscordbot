@@ -167,8 +167,8 @@ async def player_status(ctx, message):
 
     # online
     serv = MinecraftServer(server_ip, 25565)
-    query = serv.query()
-    playing = query.players.names
+    status = serv.status()
+    playing = [user['name'] for user in status.raw['players']['sample']]
     if message in playing:
         p_online = ":green_circle:"
     else:
