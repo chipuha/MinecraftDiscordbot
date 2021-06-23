@@ -52,8 +52,8 @@ async def on_ready():
              help='Checks who is on the server.')
 async def whos_on(ctx, message=""):
     serv = MinecraftServer(server_ip, 25565)
-    query = serv.query()
-    playing = query.players.names
+    status = serv.status()
+    playing = [user['name'] for user in status.raw['players']['sample']]
 
     if len(playing) > 1:
         response = "{} are on right now. {}".format(", ".join(playing), villager_noise())
