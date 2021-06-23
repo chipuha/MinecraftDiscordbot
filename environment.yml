@@ -7,6 +7,7 @@ dependencies:
   - attrs=21.2.0=pyhd8ed1ab_0
   - colorama=0.4.4=pyh9f0ad1d_0
   - discord.py=1.7.2=pyhd8ed1ab_0
+  - pip=21.0.1=py38haa95532_0
   - python=3.8.10=hdbf39b2_7
   - python-dotenv=0.17.1=pyhd8ed1ab_0
   - typing-extensions=3.7.4.3=0
@@ -27,7 +28,6 @@ dependencies:
     - multidict=5.1.0=py38h294d835_1
     - nbt==1.5.0
     - openssl=1.1.1k=h8ffe710_0
-    - pip=21.0.1=py38haa95532_0
     - python_abi=3.8=1_cp38
     - requests==2.25.1
     - setuptools=52.0.0=py38haa95532_0
