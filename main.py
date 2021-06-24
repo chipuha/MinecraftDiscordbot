@@ -54,7 +54,10 @@ async def whos_on(ctx, message=""):
     serv = MinecraftServer(server_ip, 25565)
     status = serv.status()
     print(status.raw)
-    playing = [user['name'] for user in status.raw['players']['sample']]
+    if "sample" in status.raw['players'].keys():
+        playing = [user['name'] for user in status.raw['players']['sample']]
+    else:
+        playing = []
 
     if len(playing) > 1:
         response = "{} are on right now. {}".format(", ".join(playing), villager_noise())
@@ -170,7 +173,11 @@ async def player_status(ctx, message):
     serv = MinecraftServer(server_ip, 25565)
     status = serv.status()
     print(status.raw)
-    playing = [user['name'] for user in status.raw['players']['sample']]
+    if 'sample' in status.raw['players'].keys():
+        playing = [user['name'] for user in status.raw['players']['sample']]
+    else:
+        playing = []
+        
     if message in playing:
         p_online = ":green_circle:"
     else:
@@ -344,6 +351,7 @@ async def rankings(ctx, message=""):
     embed.add_field(name="Longest lived (current life):", value=results['lived'], inline=True)
 
     await ctx.send(embed=embed)
+
 
 # not working yet
 
