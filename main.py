@@ -197,6 +197,95 @@ async def player_status(ctx, message):
     embed.set_thumbnail(url="https://visage.surgeplay.com/bust/512/{}".format(uuid))
     await ctx.send(embed=embed)
 
+# gets individual player killedby stats
+@bot.command(name='killedby', help="Shows what has killed a player.")
+async def killed_by(ctx, message):
+
+    # load json file
+    uuid = MojangAPI.get_uuid(message)
+    p_filename = uuid[:8] + "-" + uuid[8:12] + "-" + uuid[12:16] + "-" + uuid[16:20] + "-" + uuid[20:]
+    filename = save_location + "stats/" + p_filename + ".json"
+
+    with open(filename) as f:
+        kb_stats = json.load(f)['stats']
+
+    if 'minecraft:killed_by' in kb_stats.keys():
+        killedby = kb_stats['minecraft:killed_by']
+
+        embed = discord.Embed(
+            title="{}'s foes".format(message),
+            color=discord.Color.dark_green()
+        )
+
+        for mob in killedby:
+            embed.add_field(name=mob.split(":")[-1].replace('_', ' '), value=killedby[mob], inline=True)
+
+        await ctx.send(embed=embed)
+
+    else:
+        response = "{} hasn't been killed by anything yet. {}. Good job!".format(message, villager_noise())
+        await ctx.send(response)
+
+# gets individual player killedby stats
+@bot.command(name='kills', help="Shows a player's kills.")
+async def kills(ctx, message):
+
+    # load json file
+    uuid = MojangAPI.get_uuid(message)
+    p_filename = uuid[:8] + "-" + uuid[8:12] + "-" + uuid[12:16] + "-" + uuid[16:20] + "-" + uuid[20:]
+    filename = save_location + "stats/" + p_filename + ".json"
+
+    with open(filename) as f:
+        k_stats = json.load(f)['stats']
+
+    if 'minecraft:killed' in k_stats.keys():
+        killed = k_stats['minecraft:killed']
+
+        embed = discord.Embed(
+            title="Mobs who fear {}".format(message),
+            color=discord.Color.dark_green()
+        )
+
+        for mob in killed:
+            embed.add_field(name=mob.split(":")[-1].replace('_', ' '), value=killed[mob], inline=True)
+
+        await ctx.send(embed=embed)
+
+    else:
+        response = "{} hasn't killed anything yet. {}. Better get on that!".format(message, villager_noise())
+        await ctx.send(response)
+
+# gets individual player tools used stats
+@bot.command(name='tools', help="Shows all the tools a player as used up.")
+async def tools(ctx, message):
+    # load json file
+    uuid = MojangAPI.get_uuid(message)
+    p_filename = uuid[:8] + "-" + uuid[8:12] + "-" + uuid[12:16] + "-" + uuid[16:20] + "-" + uuid[20:]
+    filename = save_location + "stats/" + p_filename + ".json"
+
+    with open(filename) as f:
+        t_stats = json.load(f)['stats']
+
+    if 'minecraft:broken' in t_stats.keys():
+        killed = t_stats['minecraft:broken']
+
+        embed = discord.Embed(
+            title="Tools {} has used up".format(message),
+            color=discord.Color.dark_green()
+        )
+
+        for mob in killed:
+            embed.add_field(name=mob.split(":")[-1].replace('_', ' '), value=killed[mob], inline=True)
+
+        await ctx.send(embed=embed)
+
+    else:
+        response = "{} hasn't broken anything yet. {}. Work a little harder maybe?".format(message, villager_noise())
+        await ctx.send(response)
+
+
+
+
 
 # gets individual player stats
 @bot.command(name='stats', help="Shows a few of a player's stats.")
@@ -284,7 +373,7 @@ async def stats(ctx, message):
     await ctx.send(embed=embed)
 
 
-# gets individual player stats
+# gets server rankings
 @bot.command(name='rankings', help="Shows the current rankings among known players.")
 async def rankings(ctx, message=""):
     stats_dict = {"jumpy": {},
