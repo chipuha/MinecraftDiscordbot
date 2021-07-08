@@ -119,25 +119,6 @@ async def who_is_error(ctx, error):
         await ctx.send("{}. You're missing the account name.".format(villager_noise()))
 
 
-# watch the server log to see if anyone has joined and print message
-async def ms_login():
-    pass
-    channel = bot.get_channel(int(typie_id))
-    # monitor server log
-    # if someone logs on:
-    username = 'Name from Server Log'
-    await channel.send("{} logged on. {}".format(username, villager_noise()))
-
-
-async def ms_death():
-    pass
-    channel = bot.get_channel(int(typie_id))
-    # monitor server log
-    # if someone dies:
-    username = "Name from server log"
-    await channel.sed("{} died.".format(username))
-
-
 # gets status from the server
 @bot.command(name='status', help='Shows the current status of a player on the server.')
 async def player_status(ctx, message):
@@ -177,7 +158,7 @@ async def player_status(ctx, message):
         playing = [user['name'] for user in status.raw['players']['sample']]
     else:
         playing = []
-        
+
     if message in playing:
         p_online = ":green_circle:"
     else:
@@ -197,10 +178,10 @@ async def player_status(ctx, message):
     embed.set_thumbnail(url="https://visage.surgeplay.com/bust/512/{}".format(uuid))
     await ctx.send(embed=embed)
 
+
 # gets individual player killedby stats
 @bot.command(name='killedby', help="Shows what has killed a player.")
 async def killed_by(ctx, message):
-
     # load json file
     uuid = MojangAPI.get_uuid(message)
     p_filename = uuid[:8] + "-" + uuid[8:12] + "-" + uuid[12:16] + "-" + uuid[16:20] + "-" + uuid[20:]
@@ -226,10 +207,10 @@ async def killed_by(ctx, message):
         response = "{} hasn't been killed by anything yet. {}. Good job!".format(message, villager_noise())
         await ctx.send(response)
 
+
 # gets individual player killedby stats
 @bot.command(name='kills', help="Shows a player's kills.")
 async def kills(ctx, message):
-
     # load json file
     uuid = MojangAPI.get_uuid(message)
     p_filename = uuid[:8] + "-" + uuid[8:12] + "-" + uuid[12:16] + "-" + uuid[16:20] + "-" + uuid[20:]
@@ -254,6 +235,7 @@ async def kills(ctx, message):
     else:
         response = "{} hasn't killed anything yet. {}. Better get on that!".format(message, villager_noise())
         await ctx.send(response)
+
 
 # gets individual player tools used stats
 @bot.command(name='tools', help="Shows all the tools a player as used up.")
@@ -282,9 +264,6 @@ async def tools(ctx, message):
     else:
         response = "{} hasn't broken anything yet. {}. Work a little harder maybe?".format(message, villager_noise())
         await ctx.send(response)
-
-
-
 
 
 # gets individual player stats
@@ -376,15 +355,15 @@ async def stats(ctx, message):
 # gets server rankings
 @bot.command(name='rankings', help="Shows the current rankings among known players.")
 async def rankings(ctx, message=""):
-    stats_dict = {"jumpy": {},
-                  "sneaky": {},
-                  "hurry": {},
-                  "fish": {},
-                  "climber": {},
-                  "deadly": {},
-                  "deaths": {},
-                  "dedicated": {},
-                  "lived": {}}
+    stats_dict = {"Most jumpy": {},
+                  "Most sneaky": {},
+                  "Most in a hurry": {},
+                  "Most like a fish": {},
+                  "Best climber": {},
+                  "Most deadly": {},
+                  "Most dead": {},
+                  "Most dedicated": {},
+                  "Longest lived (current life)": {}}
 
     filename = save_location + "stats/"
     players = []
@@ -393,18 +372,18 @@ async def rankings(ctx, message=""):
         if file.endswith(".json"):
             with open(filename + file) as f:
                 all_stats = json.load(f)['stats']
-                player = MojangAPI.get_username(file.split('.')[0])
+                player = MojangAPI.get_username(file.split('.')[0])[0:4]
                 players.append(player)
 
-            stats_dict["jumpy"][player] = all_stats['minecraft:custom']['minecraft:jump']
-            stats_dict["sneaky"][player] = all_stats['minecraft:custom']['minecraft:sneak_time']
-            stats_dict["hurry"][player] = all_stats['minecraft:custom']['minecraft:sprint_one_cm']
-            stats_dict["fish"][player] = all_stats['minecraft:custom']['minecraft:swim_one_cm']
-            stats_dict["climber"][player] = all_stats['minecraft:custom']['minecraft:climb_one_cm']
-            stats_dict["deadly"][player] = all_stats['minecraft:custom']['minecraft:mob_kills']
-            stats_dict["deaths"][player] = all_stats['minecraft:custom']['minecraft:deaths']
-            stats_dict["dedicated"][player] = all_stats['minecraft:custom']['minecraft:play_time']
-            stats_dict["lived"][player] = all_stats['minecraft:custom']['minecraft:time_since_death']
+            stats_dict["Most jumpy"][player] = all_stats['minecraft:custom']['minecraft:jump']
+            stats_dict["Most sneaky"][player] = all_stats['minecraft:custom']['minecraft:sneak_time']
+            stats_dict["Most in a hurry"][player] = all_stats['minecraft:custom']['minecraft:sprint_one_cm']
+            stats_dict["Most like a fish"][player] = all_stats['minecraft:custom']['minecraft:swim_one_cm']
+            stats_dict["Best climber"][player] = all_stats['minecraft:custom']['minecraft:climb_one_cm']
+            stats_dict["Most deadly"][player] = all_stats['minecraft:custom']['minecraft:mob_kills']
+            stats_dict["Most dead"][player] = all_stats['minecraft:custom']['minecraft:deaths']
+            stats_dict["Most dedicated"][player] = all_stats['minecraft:custom']['minecraft:play_time']
+            stats_dict["Longest lived (current life)"][player] = all_stats['minecraft:custom']['minecraft:time_since_death']
 
     results = {}
     for key in stats_dict.keys():
@@ -413,7 +392,7 @@ async def rankings(ctx, message=""):
         format_list = []
         print(ordered_list)
         for item in ordered_list:
-            if key == "dedicated" or key == "lived":
+            if key == "Most dedicated" or key == "Longest lived (current life)":
                 value = str(datetime.timedelta(seconds=item[1]))
             else:
                 value = "{:,}".format(item[1])
@@ -426,20 +405,90 @@ async def rankings(ctx, message=""):
     print(results)
 
     embed = discord.Embed(
-        title="Players: {}".format(', '.join(players)),
+        title="Rankings",
         color=discord.Color.dark_green()
     )
-    embed.add_field(name="Most jumpy:", value=results['jumpy'], inline=True)
-    embed.add_field(name="Most sneaky:", value=results['sneaky'], inline=True)
-    embed.add_field(name="Most in a hurry:", value=results['hurry'], inline=True)
-    embed.add_field(name="Most like a fish:", value=results['fish'], inline=True)
-    embed.add_field(name="Best climber:", value=results['climber'], inline=True)
-    embed.add_field(name="Most deadly:", value=results['deadly'], inline=True)
-    embed.add_field(name="Most dead:", value=results['deaths'], inline=True)
-    embed.add_field(name="Most dedicated:", value=results['dedicated'], inline=True)
-    embed.add_field(name="Longest lived (current life):", value=results['lived'], inline=True)
+    for k in results.keys():
+        embed.add_field(name=k+":", value=results[k], inline=True)
+    await ctx.send(embed=embed)
+
+# gets server story achievements
+@bot.command(name='story', help="Shows the story achievements for all players.")
+async def rankings(ctx, message=""):
+
+    story_adv = ['Minecraft',
+                 'Stone Age',
+                 'Getting an Upgrade',
+                 'Acquire Hardware',
+                 'Suit Up',
+                 'Hot Stuff',
+                 "Isn't It Iron Pick",
+                 'Not Today, Thank You',
+                 'Ice Bucket Challenge',
+                 'Diamonds!',
+                 'We Need to Go Deeper',
+                 'Cover Me With Diamonds',
+                 'Enchanter',
+                 'Zombie Doctor',
+                 'Eye Spy',
+                 'The End?']
+
+    story_nam = ['story/root',
+                 'story/mine_stone',
+                 'story/upgrade_tools',
+                 'story/smelt_iron',
+                 'story/obtain_armor',
+                 'story/lava_bucket',
+                 'story/iron_tools',
+                 'story/deflect_arrow',
+                 'story/form_obsidian',
+                 'story/mine_diamond',
+                 'story/enter_the_nether',
+                 'story/shiny_gear',
+                 'story/enchant_item',
+                 'story/cure_zombie_villager',
+                 'story/follow_ender_eye',
+                 'story/enter_the_end']
+
+    adv_dict = {}
+    for i in story_nam:
+        adv_dict[i] = []
+    players = []
+
+    filename = save_location + "advancements/"
+    for file in os.listdir(filename):
+        if file.endswith(".json"):
+            with open(filename + file) as f:
+                advance = json.load(f)
+            player = MojangAPI.get_username(file.split('.')[0])
+            players.append(player)
+
+            for i in range(len(story_nam)):
+                if story_nam[i] in [k.split(":")[-1] for k in advance.keys()]:
+                    adv_dict[story_nam[i]].append("{}: :green_circle:".format(player[:4]))
+                else:
+                    adv_dict[story_nam[i]].append("{}: :red_circle:".format(player[:4]))
+
+    results = {}
+    for i in range(len(story_nam)):
+
+        results_list = " \n ".join(adv_dict[story_nam[i]])
+        print(results_list)
+        results[story_adv[i]] = results_list
+
+    print(results)
+
+    embed = discord.Embed(
+        title="Story Achievements",
+        color=discord.Color.dark_green()
+    )
+
+    for adv in results.keys():
+
+        embed.add_field(name=adv+":", value=results[adv], inline=True)
 
     await ctx.send(embed=embed)
+
 
 
 # not working yet
