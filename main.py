@@ -383,39 +383,38 @@ async def rankings(ctx, message=""):
             stats_dict["Most deadly"][player] = all_stats['minecraft:custom']['minecraft:mob_kills']
             stats_dict["Most dead"][player] = all_stats['minecraft:custom']['minecraft:deaths']
             stats_dict["Most dedicated"][player] = all_stats['minecraft:custom']['minecraft:play_time']
-            stats_dict["Longest lived (current life)"][player] = all_stats['minecraft:custom']['minecraft:time_since_death']
+            stats_dict["Longest lived (current life)"][player] = all_stats['minecraft:custom'][
+                'minecraft:time_since_death']
 
     results = {}
     for key in stats_dict.keys():
         ordered_dict = dict(reversed(sorted(stats_dict[key].items(), key=lambda item: item[1])))
         ordered_list = list(ordered_dict.items())
         format_list = []
-        print(ordered_list)
+
         for item in ordered_list:
             if key == "Most dedicated" or key == "Longest lived (current life)":
                 value = str(datetime.timedelta(seconds=item[1]))
             else:
                 value = "{:,}".format(item[1])
 
-            format_list.append("{}: **{}**".format(item[0], value))
-        results_list = " \n ".join(format_list)
-        print(results_list)
-        results[key] = results_list
+            format_list.append(" {}: **{}**".format(item[0], value))
+        results_list = " \n".join(format_list)
 
-    print(results)
+        results[key] = results_list
 
     embed = discord.Embed(
         title="Rankings",
         color=discord.Color.dark_green()
     )
     for k in results.keys():
-        embed.add_field(name=k+":", value=results[k], inline=True)
+        embed.add_field(name=k + ":", value=results[k], inline=True)
     await ctx.send(embed=embed)
+
 
 # gets server story achievements
 @bot.command(name='story', help="Shows the story achievements for all players.")
-async def rankings(ctx, message=""):
-
+async def story(ctx, message=""):
     story_adv = ['Minecraft',
                  'Stone Age',
                  'Getting an Upgrade',
@@ -465,18 +464,14 @@ async def rankings(ctx, message=""):
 
             for i in range(len(story_nam)):
                 if story_nam[i] in [k.split(":")[-1] for k in advance.keys()]:
-                    adv_dict[story_nam[i]].append("{}: :green_circle:".format(player[:4]))
+                    adv_dict[story_nam[i]].append(" {}: :green_circle:".format(player[:4]))
                 else:
-                    adv_dict[story_nam[i]].append("{}: :red_circle:".format(player[:4]))
+                    adv_dict[story_nam[i]].append(" {}: :red_circle:".format(player[:4]))
 
     results = {}
     for i in range(len(story_nam)):
-
-        results_list = " \n ".join(adv_dict[story_nam[i]])
-        print(results_list)
+        results_list = " \n".join(adv_dict[story_nam[i]])
         results[story_adv[i]] = results_list
-
-    print(results)
 
     embed = discord.Embed(
         title="Story Achievements",
@@ -484,11 +479,340 @@ async def rankings(ctx, message=""):
     )
 
     for adv in results.keys():
+        embed.add_field(name=adv + ":", value=results[adv], inline=True)
 
-        embed.add_field(name=adv+":", value=results[adv], inline=True)
-
+    url = "https://minecraft.fandom.com/wiki/Advancement"
+    embed.add_field(name="More information",
+                    value="[minecraft.fandom.com/wiki/Advancement]({})".format(url),
+                    inline=False)
     await ctx.send(embed=embed)
 
+
+# gets server nether achievements
+@bot.command(name='nether', help="Shows the nether achievements for all players.")
+async def nether(ctx, message=""):
+    nether_adv = ['Nether',
+                  'Return to Sender',
+                  'Those Were the Days',
+                  'Hidden in the Depths',
+                  'Subspace Bubble',
+                  'A Terrible Fortress',
+                  'Who is Cutting Onions?',
+                  'Oh Shiny',
+                  'This Boat Has Legs',
+                  'Uneasy Alliance',
+                  'War Pigs',
+                  'Country Lode, Take Me Home',
+                  'Cover Me in Debris',
+                  'Spooky Scary Skeleton',
+                  'Into Fire',
+                  'Not Quite "Nine" Lives',
+                  'Hot Tourist Destinations',
+                  'Withering Heights',
+                  'Local Brewery',
+                  'Bring Home the Beacon',
+                  'A Furious Cocktail',
+                  'Beaconator',
+                  'How Did We Get Here?']
+
+    nether_nam = ['nether/root',
+                  'nether/return_to_sender',
+                  'nether/find_bastion',
+                  'nether/obtain_ancient_debris',
+                  'nether/fast_travel',
+                  'nether/find_fortress',
+                  'nether/obtain_crying_obsidian',
+                  'nether/distract_piglin',
+                  'nether/ride_strider',
+                  'nether/uneasy_alliance',
+                  'nether/loot_bastion',
+                  'nether/use_lodestone',
+                  'nether/netherite_armor',
+                  'nether/get_wither_skull',
+                  'nether/obtain_blaze_rod',
+                  'nether/charge_respawn_anchor',
+                  'nether/explore_nether',
+                  'nether/summon_wither',
+                  'nether/brew_potion',
+                  'nether/create_beacon',
+                  'nether/all_potions',
+                  'nether/create_full_beacon',
+                  'nether/all_effects']
+
+    adv_dict = {}
+    for i in nether_nam:
+        adv_dict[i] = []
+    players = []
+
+    filename = save_location + "advancements/"
+    for file in os.listdir(filename):
+        if file.endswith(".json"):
+            with open(filename + file) as f:
+                advance = json.load(f)
+            player = MojangAPI.get_username(file.split('.')[0])
+            players.append(player)
+
+            for i in range(len(nether_nam)):
+                if nether_nam[i] in [k.split(":")[-1] for k in advance.keys()]:
+                    adv_dict[nether_nam[i]].append(" {}: :green_circle:".format(player[:4]))
+                else:
+                    adv_dict[nether_nam[i]].append(" {}: :red_circle:".format(player[:4]))
+
+    results = {}
+    for i in range(len(nether_nam)):
+        results_list = " \n".join(adv_dict[nether_nam[i]])
+        results[nether_adv[i]] = results_list
+
+    embed = discord.Embed(
+        title="Nether Achievements",
+        color=discord.Color.dark_green()
+    )
+
+    for adv in results.keys():
+        embed.add_field(name=adv + ":", value=results[adv], inline=True)
+
+    url = "https://minecraft.fandom.com/wiki/Advancement"
+    embed.add_field(name="More information",
+                    value="[minecraft.fandom.com/wiki/Advancement]({})".format(url),
+                    inline=False)
+    await ctx.send(embed=embed)
+
+
+# gets server the end achievements
+@bot.command(name='end', help="Shows the end achievements for all players.")
+async def end(ctx, message=""):
+    end_adv = ['The End?',
+               'Free the End',
+               'The Next Generation',
+               'Remote Getaway',
+               'The End... Again...',
+               'You Need a Mint',
+               'The City at the End of the Game',
+               "Sky's the Limit",
+               'Great View From Up Here']
+
+    end_nam = ['end/root',
+               'end/kill_dragon',
+               'end/dragon_egg',
+               'end/enter_end_gateway',
+               'end/respawn_dragon',
+               'end/dragon_breath',
+               'end/find_end_city',
+               'end/elytra',
+               'end/levitate']
+
+    adv_dict = {}
+    for i in end_nam:
+        adv_dict[i] = []
+    players = []
+
+    filename = save_location + "advancements/"
+    for file in os.listdir(filename):
+        if file.endswith(".json"):
+            with open(filename + file) as f:
+                advance = json.load(f)
+            player = MojangAPI.get_username(file.split('.')[0])
+            players.append(player)
+
+            for i in range(len(end_nam)):
+                if end_nam[i] in [k.split(":")[-1] for k in advance.keys()]:
+                    adv_dict[end_nam[i]].append(" {}: :green_circle:".format(player[:4]))
+                else:
+                    adv_dict[end_nam[i]].append(" {}: :red_circle:".format(player[:4]))
+
+    results = {}
+    for i in range(len(end_nam)):
+        results_list = " \n".join(adv_dict[end_nam[i]])
+        results[end_adv[i]] = results_list
+
+    embed = discord.Embed(
+        title="Nether Achievements",
+        color=discord.Color.dark_green()
+    )
+
+    for adv in results.keys():
+        embed.add_field(name=adv + ":", value=results[adv], inline=True)
+
+    url = "https://minecraft.fandom.com/wiki/Advancement"
+    embed.add_field(name="More information",
+                    value="[minecraft.fandom.com/wiki/Advancement]({})".format(url),
+                    inline=False)
+    await ctx.send(embed=embed)
+
+
+# gets server the adventure achievements
+@bot.command(name='adventure', help="Shows the adventure achievements for all players.")
+async def adventure(ctx, message=""):
+    adventure_adv = ['Adventure',
+                     'Voluntary Exile',
+                     'Is It a Bird?',
+                     'Monster Hunter',
+                     'What a Deal!',
+                     'Sticky Situation',
+                     "Ol' Betsy",
+                     'Surge Protector',
+                     'Light as a Rabbit',
+                     'Sweet Dreams',
+                     'Hero of the Village',
+                     'Is It a Balloon?',
+                     'A Throwaway Joke',
+                     'Take Aim',
+                     'Monsters Hunted',
+                     'Postmortal',
+                     'Hired Help',
+                     'Two Birds, One Arrow',
+                     "Who's the Pillager Now?",
+                     'Arbalistic',
+                     'Adventuring Time',
+                     'Is It a Plane?',
+                     'Very Very Frightening',
+                     'Sniper Duel',
+                     'Bullseye']
+
+    adventure_nam = ['adventure/root',
+                     'adventure/voluntary_exile',
+                     'adventure/spyglass_at_parrot',
+                     'adventure/kill_a_mob',
+                     'adventure/trade',
+                     'adventure/honey_block_slide',
+                     'adventure/ol_betsy',
+                     'adventure/lightning_rod_with_villager_no_fire',
+                     'adventure/walk_on_powder_snow_with_leather_boots',
+                     'adventure/sleep_in_bed',
+                     'adventure/hero_of_the_village',
+                     'adventure/spyglass_at_ghast',
+                     'adventure/throw_trident',
+                     'adventure/shoot_arrow',
+                     'adventure/kill_all_mobs',
+                     'adventure/totem_of_undying',
+                     'adventure/summon_iron_golem',
+                     'adventure/two_birds_one_arrow',
+                     'adventure/whos_the_pillager_now',
+                     'adventure/arbalistic',
+                     'adventure/adventuring_time',
+                     'adventure/spyglass_at_dragon',
+                     'adventure/very_very_frightening',
+                     'adventure/sniper_duel',
+                     'adventure/bullseye']
+
+    adv_dict = {}
+    for i in adventure_nam:
+        adv_dict[i] = []
+    players = []
+
+    filename = save_location + "advancements/"
+    for file in os.listdir(filename):
+        if file.endswith(".json"):
+            with open(filename + file) as f:
+                advance = json.load(f)
+            player = MojangAPI.get_username(file.split('.')[0])
+            players.append(player)
+
+            for i in range(len(adventure_nam)):
+                if adventure_nam[i] in [k.split(":")[-1] for k in advance.keys()]:
+                    adv_dict[adventure_nam[i]].append(" {}: :green_circle:".format(player[:4]))
+                else:
+                    adv_dict[adventure_nam[i]].append(" {}: :red_circle:".format(player[:4]))
+
+    results = {}
+    for i in range(len(adventure_nam)):
+        results_list = " \n".join(adv_dict[adventure_nam[i]])
+        results[adventure_adv[i]] = results_list
+
+    embed = discord.Embed(
+        title="Nether Achievements",
+        color=discord.Color.dark_green()
+    )
+
+    for adv in results.keys():
+        embed.add_field(name=adv + ":", value=results[adv], inline=True)
+
+    url = "https://minecraft.fandom.com/wiki/Advancement"
+    embed.add_field(name="More information",
+                    value="[minecraft.fandom.com/wiki/Advancement]({})".format(url),
+                    inline=False)
+    await ctx.send(embed=embed)
+
+
+# gets server the husbandry achievements
+@bot.command(name='husbandry', help="Shows the husbandry achievements for all players.")
+async def husbandry(ctx, message=""):
+    husbandry_adv = ['Husbandry',
+                     'Bee Our Guest',
+                     'The Parrots and the Bats',
+                     'Whatever Floats Your Goat!',
+                     'Best Friends Forever',
+                     'Glow and Behold!',
+                     'Fishy Business',
+                     'Total Beelocation',
+                     'A Seedy Place',
+                     'Wax On',
+                     'Two by Two',
+                     'A Complete Catalogue',
+                     'Tactical Fishing',
+                     'A Balanced Diet',
+                     'Serious Dedication',
+                     'Wax Off',
+                     'The Cutest Predator',
+                     'The Healing Power of Friendship!']
+
+    husbandry_nam = ['husbandry/root',
+                     'husbandry/safely_harvest_honey',
+                     'husbandry/breed_an_animal',
+                     'husbandry/ride_a_boat_with_a_goat',
+                     'husbandry/tame_an_animal',
+                     'husbandry/make_a_sign_glow',
+                     'husbandry/fishy_business',
+                     'husbandry/silk_touch_nest',
+                     'husbandry/plant_seed',
+                     'husbandry/wax_on',
+                     'husbandry/bred_all_animals',
+                     'husbandry/complete_catalogue',
+                     'husbandry/tactical_fishing',
+                     'husbandry/balanced_diet',
+                     'husbandry/obtain_netherite_hoe',
+                     'husbandry/wax_off',
+                     'husbandry/axolotl_in_a_bucket',
+                     'husbandry/kill_axolotl_target']
+
+    adv_dict = {}
+    for i in husbandry_nam:
+        adv_dict[i] = []
+    players = []
+
+    filename = save_location + "advancements/"
+    for file in os.listdir(filename):
+        if file.endswith(".json"):
+            with open(filename + file) as f:
+                advance = json.load(f)
+            player = MojangAPI.get_username(file.split('.')[0])
+            players.append(player)
+
+            for i in range(len(husbandry_nam)):
+                if husbandry_nam[i] in [k.split(":")[-1] for k in advance.keys()]:
+                    adv_dict[husbandry_nam[i]].append(" {}: :green_circle:".format(player[:4]))
+                else:
+                    adv_dict[husbandry_nam[i]].append(" {}: :red_circle:".format(player[:4]))
+
+    results = {}
+    for i in range(len(husbandry_nam)):
+        results_list = " \n".join(adv_dict[husbandry_nam[i]])
+        results[husbandry_adv[i]] = results_list
+
+    embed = discord.Embed(
+        title="Nether Achievements",
+        color=discord.Color.dark_green()
+    )
+
+    for adv in results.keys():
+        embed.add_field(name=adv + ":", value=results[adv], inline=True)
+
+    url = "https://minecraft.fandom.com/wiki/Advancement"
+    embed.add_field(name="More information",
+                    value="[minecraft.fandom.com/wiki/Advancement]({})".format(url),
+                    inline=False)
+
+    await ctx.send(embed=embed)
 
 
 # not working yet
